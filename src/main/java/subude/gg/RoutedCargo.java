@@ -34,10 +34,8 @@ public final class RoutedCargo extends JavaPlugin {
             World world = player.getWorld();
             Location loc = player.getLocation().getBlock().getLocation();
 
-            // ставим рельс
             loc.getBlock().setType(Material.RAIL);
 
-            // центр блока
             Location spawnLoc = loc.clone().add(0.5, 0.1, 0.5);
 
             minecart = world.spawn(spawnLoc, StorageMinecart.class);
@@ -65,7 +63,6 @@ public final class RoutedCargo extends JavaPlugin {
 
             Location target = new Location(minecart.getWorld(), x, y, z);
 
-            // ставим рельс если нет
             if (target.getBlock().getType() != Material.RAIL) {
                 target.getBlock().setType(Material.RAIL);
             }
@@ -83,7 +80,6 @@ public final class RoutedCargo extends JavaPlugin {
                 return true;
             }
 
-            // толчок вперёд
             minecart.setVelocity(new Vector(0.4, 0, 0));
             sender.sendMessage("§bТолчок дан");
             return true;
