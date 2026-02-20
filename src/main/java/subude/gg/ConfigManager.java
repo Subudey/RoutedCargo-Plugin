@@ -62,6 +62,12 @@ public class ConfigManager {
         }
     }
 
+    public void reload() {
+        plugin.reloadConfig();
+        cargoTypes.clear();
+        loadConfig();
+    }
+
     public static class CargoType {
         public String name;
         public double chance;
