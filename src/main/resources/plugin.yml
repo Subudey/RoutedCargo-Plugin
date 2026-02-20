@@ -7,8 +7,4 @@ authors: [subude, Mazayka]
 description: Обещания надо исполнять
 commands:
   cartspawn:
-    description: Spawn test minecart
-  carttp:
-    description: Teleport minecart
-  cartmove:
-    description: Push minecart
+    description: Спавнит груз

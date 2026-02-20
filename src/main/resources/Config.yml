@@ -1,0 +1,68 @@
+# Время между событиями (в минутах)
+event-interval: 30
+
+# Время до старта ивента после спавна (в секундах)
+event-start-interval: 180
+
+# Время до перехода груза на следующий этап (в секундах)
+event-duration: 75
+
+# Звук перехода на новый этап
+stage-sound: BLOCK_ANVIL_FALL
+
+# Радиус генерации вокруг (0, 0)
+spawn-radius: 1000
+
+# Минимальная высота спавна ивента
+min-y: 50
+
+# Сообщение при появлении
+start-message:
+  - "[Маршруточный груз] Внимание! Событие Маршруточный груз началось!"
+  - "Он появился на координатах: x: %x%, y: %y%, z: %z%"
+
+# Сообщение при окончании
+end-message:
+  - "[Маршруточный груз] Внимание! Событие Маршруточный груз закончилось!"
+
+# Разные типы грузов
+cargo-types:
+  common:
+    name: "Обычный"
+    chance: 0.7
+    drop-table:
+      - material: BREAD
+        amount: 1
+        chance: 0.5
+      - material: IRON_INGOT
+        amount: 2
+        chance: 0.3
+      - material: COAL
+        amount: 3
+        chance: 0.4
+  rare:
+    name: "Значительный"
+    chance: 0.4
+    drop-table:
+      - material: DIAMOND
+        amount: 1
+        chance: 0.2
+      - material: ENCHANTED_BOOK
+        amount: 1
+        chance: 0.1
+      - material: SPLASH_POTION
+        amount: 2
+        chance: 0.2
+  epic:
+    name: "Легендарный"
+    chance: 0.1
+    drop-table:
+      - material: TOTEM_OF_UNDYING
+        amount: 1
+        chance: 0.1
+      - material: GOLDEN_APPLE
+        amount: 2
+        chance: 0.15
+      - material: NETHERITE_INGOT
+        amount: 1
+        chance: 0.05
