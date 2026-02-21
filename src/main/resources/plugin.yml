@@ -6,5 +6,5 @@ load: STARTUP
 authors: [subude, Mazayka]
 description: Обещания надо исполнять
 commands:
-  cartspawn:
+  cargo:
     description: Спавнит груз

@@ -7,6 +7,9 @@ event-start-interval: 180
 # Время до перехода груза на следующий этап (в секундах)
 event-duration: 75
 
+# Попытки поиска места под ивент
+event-attemps: 20000
+
 # Звук перехода на новый этап
 stage-sound: BLOCK_ANVIL_FALL
 

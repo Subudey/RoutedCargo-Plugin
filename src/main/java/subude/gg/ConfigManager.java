@@ -15,6 +15,7 @@ public class ConfigManager {
     public int eventInterval;
     public int eventStartInterval;
     public int eventDuration;
+    public int attemps;
     public String stageSound;
     public int spawnRadius;
     public int minY;
@@ -38,6 +39,7 @@ public class ConfigManager {
         minY = plugin.getConfig().getInt("min-y");
         startMessage = plugin.getConfig().getStringList("start-message");
         endMessage = plugin.getConfig().getStringList("end-message");
+        attemps = plugin.getConfig().getInt("event-attemps");
 
         ConfigurationSection typesSection = plugin.getConfig().getConfigurationSection("cargo-types");
         if (typesSection != null) {
