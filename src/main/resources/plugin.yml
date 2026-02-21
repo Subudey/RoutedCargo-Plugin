@@ -7,4 +7,8 @@ authors: [subude, Mazayka]
 description: Обещания надо исполнять
 commands:
   cargo:
-    description: Спавнит груз
+    description: Управление Маршруточным грузом
+    usage: /cargo <start|stop|status>
+    permission: cargo.use
+    aliases: [cg]
+    permission-message: У вас нет прав на использование этой команды

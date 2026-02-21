@@ -1,0 +1,60 @@
+package subude.gg;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+
+public class CargoCommands implements CommandExecutor {
+    private final SpawnManager spawnManager;
+    private final ConfigManager configManager;
+
+    public CargoCommands(SpawnManager spawnManager, ConfigManager configManager) {
+        this.spawnManager = spawnManager;
+        this.configManager = configManager;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 0) {
+            sender.sendMessage("Использование /cargo <start|stop|status>");
+            return true;
+        }
+
+        switch (args[0].toLowerCase()) {
+            case "start" -> {
+                if (spawnManager.getMinecart() != null) {
+                    sender.sendMessage("Ивент уже идёт!");
+                } else if (spawnManager.spawnStructure()) {
+                    sender.sendMessage("§aВагонетка заспавнена!");
+                } else {
+                    sender.sendMessage("§cНе удалось найти место для спавна.");
+                }
+            }
+
+            case "stop" -> {
+                spawnManager.removeStructure();
+                sender.sendMessage("§cВагонетка удалена.");
+            }
+
+            case "status" -> {
+                if (spawnManager.getMinecart() != null) {
+                    for (String statusGoMessage: configManager.statusGoMessage) {
+                        sender.sendMessage(spawnManager.applyPlaceholders(statusGoMessage));
+                    }
+                } else {
+                    for (String statusNoneMessage: configManager.statusNoneMessage) {
+                        sender.sendMessage(spawnManager.applyPlaceholders(statusNoneMessage));
+                    }
+                }
+            }
+
+            default -> {
+                sender.sendMessage("Некорректный аргумент");
+                sender.sendMessage("Используете /cargo <start|stop|status>");
+            }
+
+        }
+
+        return true;
+    }
+}

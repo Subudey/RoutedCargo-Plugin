@@ -1,9 +1,6 @@
 package subude.gg;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.minecart.StorageMinecart;
@@ -19,9 +16,7 @@ public class SpawnManager {
     private StorageMinecart minecart;
     private final List<Block> placedBlocks = new ArrayList<>();
 
-    public SpawnManager(ConfigManager configManager) {
-        this.configManager = configManager;
-    }
+    public SpawnManager(ConfigManager configManager) {this.configManager = configManager;}
 
     public boolean spawnStructure() {
         if (minecart != null && !minecart.isDead()) {
@@ -35,6 +30,10 @@ public class SpawnManager {
 
         buildRails(loc);
         spawnMinecart(loc);
+
+        for (String startMessage : configManager.startMessage) {
+            Bukkit.broadcastMessage(applyPlaceholders(startMessage));
+        }
 
         return true;
     }
@@ -116,16 +115,29 @@ public class SpawnManager {
             block.setType(Material.AIR);
         }
 
+        for (String endMessage : configManager.endMessage) {
+            Bukkit.broadcastMessage(applyPlaceholders(endMessage));
+        }
+
         placedBlocks.clear();
         spawnLocation = null;
         minecart = null;
     }
 
-    public Location getSpawnLocation() {
-        return spawnLocation;
+    public String applyPlaceholders(String message) {
+
+        if (spawnLocation == null) return message;
+
+        message = message
+                .replace("%x%", String.valueOf(spawnLocation.getBlockX()))
+                .replace("%y%", String.valueOf(spawnLocation.getBlockY()))
+                .replace("%z%", String.valueOf(spawnLocation.getBlockZ()));
+
+        return ChatColor.translateAlternateColorCodes('&', message);
     }
 
-    public StorageMinecart getMinecart() {
-        return minecart;
-    }
+
+    public Location getSpawnLocation() { return spawnLocation;}
+
+    public StorageMinecart getMinecart() { return minecart;}
 }

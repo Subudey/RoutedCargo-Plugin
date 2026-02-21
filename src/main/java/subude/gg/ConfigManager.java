@@ -21,6 +21,8 @@ public class ConfigManager {
     public int minY;
     public List<String> startMessage;
     public List<String> endMessage;
+    public List<String> statusGoMessage;
+    public List<String> statusNoneMessage;
 
     public final Map<String, CargoType> cargoTypes = new HashMap<>();
 
@@ -39,6 +41,8 @@ public class ConfigManager {
         minY = plugin.getConfig().getInt("min-y");
         startMessage = plugin.getConfig().getStringList("start-message");
         endMessage = plugin.getConfig().getStringList("end-message");
+        statusGoMessage = plugin.getConfig().getStringList("status-message-go");
+        statusNoneMessage = plugin.getConfig().getStringList("status-message-none");
         attemps = plugin.getConfig().getInt("event-attemps");
 
         ConfigurationSection typesSection = plugin.getConfig().getConfigurationSection("cargo-types");
