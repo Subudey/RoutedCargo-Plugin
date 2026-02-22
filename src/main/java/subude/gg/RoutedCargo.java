@@ -8,8 +8,9 @@ public final class RoutedCargo extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         configManager = new ConfigManager(this);
-        spawnManager = new SpawnManager(configManager);
+        spawnManager = new SpawnManager(configManager, this);
 
         getCommand("cargo").setExecutor(new CargoCommands(spawnManager, configManager));
         getLogger().info("RoutedCargo Load");
@@ -17,7 +18,7 @@ public final class RoutedCargo extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
+        spawnManager.removeStructure();
     }
 
     public ConfigManager getConfigManager() {

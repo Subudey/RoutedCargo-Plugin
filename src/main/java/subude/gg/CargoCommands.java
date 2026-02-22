@@ -1,5 +1,6 @@
 package subude.gg;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,24 +17,28 @@ public class CargoCommands implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("Использование /cargo <start|stop|status>");
+            sender.sendMessage("§eИспользование /cargo <start|stop|status|reload>");
             return true;
         }
 
         switch (args[0].toLowerCase()) {
             case "start" -> {
                 if (spawnManager.getMinecart() != null) {
-                    sender.sendMessage("Ивент уже идёт!");
+                    sender.sendMessage("§cИвент уже идёт!");
                 } else if (spawnManager.spawnStructure()) {
-                    sender.sendMessage("§aВагонетка заспавнена!");
+                    sender.sendMessage("§cВагонетка заспавнена!");
                 } else {
                     sender.sendMessage("§cНе удалось найти место для спавна.");
                 }
             }
 
             case "stop" -> {
-                spawnManager.removeStructure();
-                sender.sendMessage("§cВагонетка удалена.");
+                if (spawnManager.getMinecart() == null) {
+                    sender.sendMessage("§cИвента не обнаруженно!");
+                } else {
+                    spawnManager.removeStructure();
+                    sender.sendMessage("§cВагонетка удалена.");
+                }
             }
 
             case "status" -> {
@@ -48,9 +53,14 @@ public class CargoCommands implements CommandExecutor {
                 }
             }
 
+            case "reload" -> {
+                configManager.reload();
+                sender.sendMessage("§aКонфиг испешно перезагружен!");
+            }
+
             default -> {
-                sender.sendMessage("Некорректный аргумент");
-                sender.sendMessage("Используете /cargo <start|stop|status>");
+                sender.sendMessage("§cНекорректный аргумент");
+                sender.sendMessage("§cИспользуете /cargo <start|stop|status>");
             }
 
         }

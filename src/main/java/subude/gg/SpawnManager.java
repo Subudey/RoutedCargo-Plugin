@@ -2,29 +2,37 @@ package subude.gg;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Rail;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.minecart.StorageMinecart;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.*;
 
 public class SpawnManager {
     private final ConfigManager configManager;
     private final Random random = new Random();
-
     private Location spawnLocation;
-    private StorageMinecart minecart;
+    private UUID minecartUUID;
     private final List<Block> placedBlocks = new ArrayList<>();
+    private final NamespacedKey key;
 
-    public SpawnManager(ConfigManager configManager) {this.configManager = configManager;}
+    public SpawnManager(ConfigManager configManager, JavaPlugin plugin) {
+        this.configManager = configManager;
+        this.key = new NamespacedKey(plugin,"cargo_minecart");
+    }
 
     public boolean spawnStructure() {
-        if (minecart != null && !minecart.isDead()) {
+        if (getMinecart() != null && !getMinecart().isDead()) {
             removeStructure();
         }
 
         Location loc = findSafeLocation();
         if (loc == null) return false;
+        loc.getChunk().setForceLoaded(true);
 
         this.spawnLocation = loc;
 
@@ -40,104 +48,111 @@ public class SpawnManager {
 
     private Location findSafeLocation() {
         World world = Bukkit.getWorld("world");
+        if (world == null) return null;
+
         int radius = configManager.spawnRadius;
         int minY = configManager.minY;
 
-        if (world == null) return null;
-
-        for (int i = 0; i < configManager.attemps; i++) {
-
+        for (int attempt = 0; attempt < configManager.attemps; attempt++) {
             int x = random.nextInt(radius * 2) - radius;
             int z = random.nextInt(radius * 2) - radius;
 
             int y = world.getHighestBlockYAt(x, z);
-
             if (y < minY) continue;
 
-            Block ground = world.getBlockAt(x, y - 1, z);
-            Material type = ground.getType();
-
-            if (!type.isSolid() || type == Material.WATER || type == Material.LAVA) continue;
-
-            boolean cliff = true;
-
-            for (int i2 = 1; i2 <= 3; i2++) {
-                Block front = world.getBlockAt(x, y - 1, z - i2);
-                if (front.getType().isSolid()) {
-                    cliff = false;
+            boolean valid = true;
+            for (int dz = 0; dz < 5; dz++) {
+                Block ground = world.getBlockAt(x, y - 1, z - dz);
+                Material type = ground.getType();
+                if (!type.isSolid() || type == Material.WATER || type == Material.LAVA) {
+                    valid = false;
                     break;
                 }
             }
 
-            if (!cliff) continue;
+            if (valid) {
+                Block cliff = world.getBlockAt(x, y - 1, z - 5);
+                if (cliff.getType().isSolid()) valid = false;
+            }
 
-            return new Location(world, x, y, z);
+            if (valid) {
+                return new Location(world, x + 0.5, y, z + 0.5);
+            }
         }
+
         return null;
     }
 
-    private void buildRails(Location center) {
-        World world = center.getWorld();
+    private void buildRails(Location start) {
+        World world = start.getWorld();
+        int x = start.getBlockX();
+        int y = start.getBlockY();
+        int z = start.getBlockZ();
 
         for (int i = 0; i < 5; i++) {
-
-            Block block = world.getBlockAt(
-                    center.getBlockX(),
-                    center.getBlockY(),
-                    center.getBlockZ() - i
-            );
-
-            block.setType(Material.RAIL);
-            placedBlocks.add(block);
+            Block railBlock = world.getBlockAt(x, y, z - i);
+            railBlock.setType(Material.RAIL);
+            placedBlocks.add(railBlock);
         }
     }
 
     private void spawnMinecart(Location loc) {
-        minecart = (StorageMinecart) loc.getWorld().spawnEntity(
-                loc.clone().add(0.5, 0, 0.5),
-                EntityType.MINECART_CHEST
-        );
+        StorageMinecart cart =
+                (StorageMinecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART_CHEST);
 
-        minecart.setCustomName("§6Маршруточный Груз");
-        minecart.setCustomNameVisible(true);
-        minecart.setGravity(false);
-        minecart.setInvulnerable(true);
-        minecart.setPersistent(true);
+        minecartUUID = cart.getUniqueId();
+
+        cart.setCustomName("§6Маршруточный Груз");
+        cart.setGravity(false);
+        cart.setInvulnerable(true);
+        cart.setSilent(true);
+        cart.setPersistent(true);
     }
 
     public void removeStructure() {
+        StorageMinecart cart = getMinecart();
 
-        if (minecart != null && !minecart.isDead()) {
-            minecart.remove();
+        if (cart != null && !cart.isDead()) {
+            cart.remove();
+        }
+
+        minecartUUID = null;
+
+        if (spawnLocation != null) {
+            spawnLocation.getChunk().setForceLoaded(false);
         }
 
         for (Block block : placedBlocks) {
             block.setType(Material.AIR);
         }
+        placedBlocks.clear();
 
         for (String endMessage : configManager.endMessage) {
             Bukkit.broadcastMessage(applyPlaceholders(endMessage));
         }
-
-        placedBlocks.clear();
-        spawnLocation = null;
-        minecart = null;
     }
 
     public String applyPlaceholders(String message) {
-
-        if (spawnLocation == null) return message;
-
-        message = message
-                .replace("%x%", String.valueOf(spawnLocation.getBlockX()))
-                .replace("%y%", String.valueOf(spawnLocation.getBlockY()))
-                .replace("%z%", String.valueOf(spawnLocation.getBlockZ()));
-
+        if (spawnLocation != null) {
+            message = message
+                    .replace("%x%", String.valueOf(spawnLocation.getBlockX()))
+                    .replace("%y%", String.valueOf(spawnLocation.getBlockY()))
+                    .replace("%z%", String.valueOf(spawnLocation.getBlockZ()));
+        }
         return ChatColor.translateAlternateColorCodes('&', message);
     }
 
+    public StorageMinecart getMinecart() {
+        if (minecartUUID == null) return null;
 
-    public Location getSpawnLocation() { return spawnLocation;}
+        for (World world : Bukkit.getWorlds()) {
+            Entity entity = world.getEntity(minecartUUID);
 
-    public StorageMinecart getMinecart() { return minecart;}
+            if (entity instanceof StorageMinecart cart) {
+                return cart;
+            }
+        }
+
+        return null;
+    }
 }
