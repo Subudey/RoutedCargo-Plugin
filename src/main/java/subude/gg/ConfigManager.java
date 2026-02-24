@@ -10,23 +10,23 @@ import java.util.List;
 import java.util.Map;
 
 public class ConfigManager {
-    private final JavaPlugin plugin;
-
     public int eventInterval;
     public int eventStartInterval;
     public int eventDuration;
     public int attemps;
-    public String stageSound;
     public int spawnRadius;
     public int minY;
+    public String stageSound;
     public List<String> startMessage;
     public List<String> endMessage;
     public List<String> statusGoMessage;
     public List<String> statusNoneMessage;
+    private final JavaPlugin plugin;
     public final Map<String, CargoType> cargoTypes = new HashMap<>();
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
+        plugin.saveDefaultConfig();
         loadConfig();
     }
 
@@ -45,7 +45,6 @@ public class ConfigManager {
 
         ConfigurationSection typesSection = plugin.getConfig().getConfigurationSection("cargo-types");
         if (typesSection != null) {
-
             for (String key : typesSection.getKeys(false)) {
                 ConfigurationSection typeSection = typesSection.getConfigurationSection(key);
                 CargoType type = new CargoType();

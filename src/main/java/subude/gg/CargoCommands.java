@@ -1,6 +1,5 @@
 package subude.gg;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -55,12 +54,12 @@ public class CargoCommands implements CommandExecutor {
 
             case "reload" -> {
                 configManager.reload();
-                sender.sendMessage("§aКонфиг испешно перезагружен!");
+                sender.sendMessage("§aКонфиг успешно перезагружен!");
             }
 
             default -> {
                 sender.sendMessage("§cНекорректный аргумент");
-                sender.sendMessage("§cИспользуете /cargo <start|stop|status>");
+                sender.sendMessage("§cИспользуете /cargo <start|stop|status|reload>");
             }
 
         }

@@ -8,7 +8,6 @@ public final class RoutedCargo extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
         configManager = new ConfigManager(this);
         spawnManager = new SpawnManager(configManager, this);
 
@@ -19,9 +18,6 @@ public final class RoutedCargo extends JavaPlugin {
     @Override
     public void onDisable() {
         spawnManager.removeStructure();
-    }
-
-    public ConfigManager getConfigManager() {
-        return configManager;
+        getLogger().info("RoutedCargo Unload");
     }
 }

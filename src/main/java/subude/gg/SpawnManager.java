@@ -2,23 +2,21 @@ package subude.gg;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Rail;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.minecart.StorageMinecart;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import java.util.*;
 
 public class SpawnManager {
     private final ConfigManager configManager;
     private final Random random = new Random();
-    private Location spawnLocation;
-    private UUID minecartUUID;
     private final List<Block> placedBlocks = new ArrayList<>();
     private final NamespacedKey key;
+    private Location spawnLocation;
+    private UUID minecartUUID;
+    private BlockFace railDirection;
 
     public SpawnManager(ConfigManager configManager, JavaPlugin plugin) {
         this.configManager = configManager;
@@ -60,27 +58,42 @@ public class SpawnManager {
             int y = world.getHighestBlockYAt(x, z);
             if (y < minY) continue;
 
-            boolean valid = true;
-            for (int dz = 0; dz < 5; dz++) {
-                Block ground = world.getBlockAt(x, y - 1, z - dz);
-                Material type = ground.getType();
-                if (!type.isSolid() || type == Material.WATER || type == Material.LAVA) {
-                    valid = false;
-                    break;
+            Location base = new Location(world, x, y, z);
+            for (BlockFace face : new BlockFace[]{
+                    BlockFace.NORTH,
+                    BlockFace.SOUTH,
+                    BlockFace.EAST,
+                    BlockFace.WEST
+            }) {
+                if (canPlaceRails(base, face)) {
+                    railDirection = face;
+                    return base.add(0.5, 1, 0.5);
                 }
             }
-
-            if (valid) {
-                Block cliff = world.getBlockAt(x, y - 1, z - 5);
-                if (cliff.getType().isSolid()) valid = false;
-            }
-
-            if (valid) {
-                return new Location(world, x + 0.5, y, z + 0.5);
-            }
         }
-
         return null;
+    }
+
+    private boolean canPlaceRails(Location start, BlockFace direction) {
+        World world = start.getWorld();
+        int x = start.getBlockX();
+        int y = start.getBlockY();
+        int z = start.getBlockZ();
+
+        for (int i = 0; i < 5; i++) {
+
+            int dx = direction.getModX() * i;
+            int dz = direction.getModZ() * i;
+
+            Block ground = world.getBlockAt(x + dx, y, z + dz);
+            Block railSpace = world.getBlockAt(x + dx, y + 1, z + dz);
+            Block headSpace = world.getBlockAt(x + dx, y + 2, z + dz);
+
+            if (!ground.getType().isSolid()) return false;
+            if (!railSpace.getType().isAir()) return false;
+            if (!headSpace.getType().isAir()) return false;
+        }
+        return true;
     }
 
     private void buildRails(Location start) {
@@ -90,16 +103,19 @@ public class SpawnManager {
         int z = start.getBlockZ();
 
         for (int i = 0; i < 5; i++) {
-            Block railBlock = world.getBlockAt(x, y, z - i);
+
+            int dx = railDirection.getModX() * i;
+            int dz = railDirection.getModZ() * i;
+
+            Block railBlock = world.getBlockAt(x + dx, y, z + dz);
             railBlock.setType(Material.RAIL);
+
             placedBlocks.add(railBlock);
         }
     }
 
     private void spawnMinecart(Location loc) {
-        StorageMinecart cart =
-                (StorageMinecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART_CHEST);
-
+        StorageMinecart cart = (StorageMinecart) loc.getWorld().spawnEntity(loc, EntityType.MINECART_CHEST);
         minecartUUID = cart.getUniqueId();
 
         cart.setCustomName("§6Маршруточный Груз");
@@ -152,7 +168,7 @@ public class SpawnManager {
                 return cart;
             }
         }
-
         return null;
     }
+
 }
