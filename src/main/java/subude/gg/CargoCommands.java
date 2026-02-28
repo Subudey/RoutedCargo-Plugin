@@ -3,14 +3,19 @@ package subude.gg;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import subude.gg.Managers.ConfigManager;
+import subude.gg.Managers.EventManager;
+import subude.gg.Managers.SpawnManager;
 
 public class CargoCommands implements CommandExecutor {
     private final SpawnManager spawnManager;
     private final ConfigManager configManager;
+    private final EventManager eventManager;
 
-    public CargoCommands(SpawnManager spawnManager, ConfigManager configManager) {
+    public CargoCommands(SpawnManager spawnManager, ConfigManager configManager, EventManager eventManager) {
         this.spawnManager = spawnManager;
         this.configManager = configManager;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -42,13 +47,17 @@ public class CargoCommands implements CommandExecutor {
 
             case "status" -> {
                 if (spawnManager.getMinecart() != null) {
-                    for (String statusGoMessage: configManager.statusGoMessage) {
-                        sender.sendMessage(spawnManager.applyPlaceholders(statusGoMessage));
-                    }
+                    configManager.statusGoMessage.stream().forEach(x -> sender.sendMessage(spawnManager.applyPlaceholders(x)));
                 } else {
-                    for (String statusNoneMessage: configManager.statusNoneMessage) {
-                        sender.sendMessage(spawnManager.applyPlaceholders(statusNoneMessage));
-                    }
+                    configManager.statusNoneMessage.stream().forEach(x -> sender.sendMessage(spawnManager.applyPlaceholders(x)));
+                }
+            }
+
+            case "nextstage" -> {
+                if (spawnManager.getMinecart() != null) {
+                    eventManager.nextCargoStage();
+                } else {
+                    sender.sendMessage("Ивента не обнаруженно");
                 }
             }
 

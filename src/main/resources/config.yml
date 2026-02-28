@@ -10,8 +10,32 @@ event-duration: 75
 # Попытки поиска места под ивент
 event-attemps: 20000
 
+# Наличие случайных событий при переходе на следующий этап
+random-effects: true
+
+# Звук появления ивента на сервере
+spawn-sounds:
+  - BLOCK_BEACON_ACTIVATE
+  - BLOCK_ANVIL_FALL
+
 # Звук перехода на новый этап
-stage-sound: BLOCK_ANVIL_FALL
+stage-sounds:
+  - BLOCK_AMETHYST_BLOCK_BREAK
+
+# Звук открытия груза
+open-sounds:
+  - ITEM_TOTEM_USE
+  - BLOCK_SMOKER_SMOKE
+
+# Эффекты перехода на новый этап
+stage-particles:
+  - COMPOSTER
+  - SOUL
+
+# Эффекты открытия груза
+open-particles:
+  - DRAGON_BREATH
+  - SMOKE_NORMAL
 
 # Радиус генерации вокруг (0, 0)
 spawn-radius: 1000
@@ -22,6 +46,7 @@ min-y: 50
 # Сообщение при появлении
 start-message:
   - "&6[Маршруточный груз] &7Внимание! Событие Маршруточный груз началось!"
+  - "&6Уровень лута: &e%type%"
   - "&7Он появился на координатах: &ex: %x%, y: %y%, z: %z%"
 
 # Сообщение при окончании
@@ -39,40 +64,40 @@ status-none-message:
 cargo-types:
   common:
     name: "Обычный"
-    chance: 0.7
+    chance: 70
     drop-table:
       - material: BREAD
         amount: 1
-        chance: 0.5
+        chance: 50
       - material: IRON_INGOT
         amount: 2
-        chance: 0.3
+        chance: 30
       - material: COAL
         amount: 3
-        chance: 0.4
+        chance: 40
   rare:
     name: "Значительный"
-    chance: 0.4
+    chance: 40
     drop-table:
       - material: DIAMOND
         amount: 1
-        chance: 0.2
+        chance: 20
       - material: ENCHANTED_BOOK
         amount: 1
-        chance: 0.1
+        chance: 10
       - material: SPLASH_POTION
         amount: 2
-        chance: 0.2
+        chance: 20
   epic:
     name: "Легендарный"
-    chance: 0.1
+    chance: 10
     drop-table:
       - material: TOTEM_OF_UNDYING
         amount: 1
-        chance: 0.1
+        chance: 10
       - material: GOLDEN_APPLE
         amount: 2
-        chance: 0.15
+        chance: 50
       - material: NETHERITE_INGOT
         amount: 1
-        chance: 0.05
+        chance: 5
