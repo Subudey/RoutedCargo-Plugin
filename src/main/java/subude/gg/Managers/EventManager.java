@@ -7,10 +7,12 @@ import org.bukkit.entity.Minecart;
 public class EventManager {
     private final ConfigManager configManager;
     private final SpawnManager spawnManager;
+    private final RandomStageEffectsManager randomStageEffectsManager;
 
-    public EventManager(ConfigManager configManager, SpawnManager spawnManager) {
+    public EventManager(ConfigManager configManager, SpawnManager spawnManager, RandomStageEffectsManager randomStageEffectsManager) {
         this.configManager = configManager;
         this.spawnManager = spawnManager;
+        this.randomStageEffectsManager = randomStageEffectsManager;
     }
 
     public void nextCargoStage() {
@@ -25,6 +27,12 @@ public class EventManager {
 
         Location nextLoc = getNextLocation(cart.getLocation(), spawnManager.getRailDirection());
         cart.teleport(nextLoc);
+
+        if (configManager.randomEffects) {
+            randomStageEffectsManager.triggerRandomEffect();
+        }
+
+        randomStageEffectsManager.triggerStandartEffect();
         spawnManager.incrementSteps();
         configManager.stageSounds.stream().forEach(sound -> cart.getWorld().playSound(nextLoc, sound, 8F, 1F));
         configManager.stageParticles.stream().forEach(particle -> cart.getWorld().spawnParticle(particle,nextLoc,200));

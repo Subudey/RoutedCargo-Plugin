@@ -8,7 +8,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import java.util.*;
 
 public class SpawnManager {
@@ -119,7 +118,9 @@ public class SpawnManager {
         minecartUUID = cart.getUniqueId();
         lootManager.fillMinecart(cart);
 
-        cart.setCustomName("§6Маршруточный Груз: " + lootManager.getCargoType());
+        loc.getChunk().setForceLoaded(true);
+
+        cart.setCustomName("§6Маршруточный Груз: " + lootManager.getCargoType().name);
         cart.setCustomNameVisible(true);
         cart.setGravity(false);
         cart.setInvulnerable(true);
@@ -131,6 +132,7 @@ public class SpawnManager {
         StorageMinecart cart = getMinecart();
 
         if (cart != null && !cart.isDead()) {
+            cart.getLocation().getChunk().setForceLoaded(false);
             cart.remove();
         }
 
@@ -156,7 +158,7 @@ public class SpawnManager {
         }
 
         if (lootManager.getCargoType() != null) {
-            message = message.replace("%type%", lootManager.getCargoType());
+            message = message.replace("%type%", lootManager.getCargoType().name);
         }
 
         return ChatColor.translateAlternateColorCodes('&', message);

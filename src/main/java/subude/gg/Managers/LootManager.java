@@ -62,7 +62,5 @@ public class LootManager {
         return configManager.cargoTypes.values().iterator().next();
     }
 
-    public String getCargoType() {
-        return cargoType != null ? cargoType.name : null;
-    }
+    public ConfigManager.CargoType getCargoType() {return cargoType;}
 }
