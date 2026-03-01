@@ -19,7 +19,7 @@ public final class RoutedCargo extends JavaPlugin {
         lootManager = new LootManager(configManager);
         spawnManager = new SpawnManager(configManager, lootManager,this);
         randomStageEffectsManager = new RandomStageEffectsManager(spawnManager, lootManager, this);
-        eventManager = new EventManager(configManager,spawnManager, randomStageEffectsManager);
+        eventManager = new EventManager(configManager,spawnManager, randomStageEffectsManager, this);
         cargoListener = new CargoListener(this, randomStageEffectsManager.getActiveMeteors());
 
         getCommand("cargo").setExecutor(new CargoCommands(spawnManager, configManager, eventManager));

@@ -168,8 +168,8 @@ public class RandomStageEffectsManager {
     }
 
     private void spawnMeteor(StorageMinecart cart) {
-        int amount = 12;
-        double radius = 20;
+        int amount = 14;
+        double radius = 18;
         Location center = cart.getLocation();
         World world = center.getWorld();
 
@@ -197,7 +197,7 @@ public class RandomStageEffectsManager {
 
                 meteor.setDropItem(false);
                 meteor.setHurtEntities(false);
-                meteor.setVelocity(new Vector(0, -0.05, 0));
+                meteor.setVelocity(new Vector(0, -0.06, 0));
                 trackMeteor(meteor);
 
                 spawned++;
