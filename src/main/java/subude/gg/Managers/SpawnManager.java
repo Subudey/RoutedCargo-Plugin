@@ -7,12 +7,14 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.StorageMinecart;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.*;
 
 public class SpawnManager {
     private final ConfigManager configManager;
     private final LootManager lootManager;
+    private final JavaPlugin plugin;
     private final Random random = new Random();
     private final List<Block> placedBlocks = new ArrayList<>();
     private final NamespacedKey key;
@@ -25,6 +27,7 @@ public class SpawnManager {
     public SpawnManager(ConfigManager configManager, LootManager lootManager, JavaPlugin plugin) {
         this.configManager = configManager;
         this.lootManager = lootManager;
+        this.plugin = plugin;
         this.key = new NamespacedKey(plugin,"cargo_minecart");
     }
 
@@ -120,6 +123,7 @@ public class SpawnManager {
 
         loc.getChunk().setForceLoaded(true);
 
+        cart.setMetadata("cargo_cart", new FixedMetadataValue(plugin, true));
         cart.setCustomName("§6Маршруточный Груз: " + lootManager.getCargoType().name);
         cart.setCustomNameVisible(true);
         cart.setGravity(false);

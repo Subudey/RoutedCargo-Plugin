@@ -1,25 +1,22 @@
 package subude.gg.Managers;
 
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.StorageMinecart;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
-public class RandomStageEffectsManager implements Listener {
+public class RandomStageEffectsManager {
     private final SpawnManager spawnManager;
+    private final Set<FallingBlock> activeMeteors = new HashSet<>();
     private final LootManager lootManager;
     private final JavaPlugin plugin;
     private final Random random = new Random();
@@ -60,50 +57,38 @@ public class RandomStageEffectsManager implements Listener {
         eq.setBootsDropChance(0f);
     }
 
-    @EventHandler
-    public void onMeteorLand(EntityChangeBlockEvent e) {
-        if (!(e.getEntity() instanceof FallingBlock)) return;
-
-        FallingBlock fb = (FallingBlock) e.getEntity();
-        if (fb.getBlockData().getMaterial() != Material.MAGMA_BLOCK) return;
-
-        e.setCancelled(true); // чтобы магма не ставилась
-
-        Location loc = fb.getLocation();
-        fb.remove();
-
-        loc.getWorld().createExplosion(loc, 3F, false, false);
-    }
-
     private void trackMeteor(FallingBlock meteor) {
         new BukkitRunnable() {
+            double rotation = 0;
+
             @Override
             public void run() {
-                if (meteor.isDead()) {
+                if (!meteor.isValid()) {
                     cancel();
                     return;
                 }
 
                 Location loc = meteor.getLocation();
-                meteor.getWorld().spawnParticle(Particle.FLAME, loc,3,0.1,0.1,0.1,0);
+                World world = loc.getWorld();
 
-                if (meteor.isOnGround() || loc.clone().subtract(0, 1, 0).getBlock().getType().isSolid()) {
-                    World world = loc.getWorld();
-                    meteor.remove();
+                rotation += 0.6;
 
-                    world.createExplosion(loc, 3F, false, false);
+                double spiralX = Math.cos(rotation) * 0.18;
+                double spiralZ = Math.sin(rotation) * 0.18;
 
-                    for (Player player : world.getPlayers()) {
-                        if (player.getLocation().distance(loc) <= 5) {
-                            player.damage(8.0);
-                        }
-                    }
+                Vector current = meteor.getVelocity();
+                meteor.setVelocity(new Vector(spiralX,current.getY() - 0.002, spiralZ));
 
-                    world.spawnParticle(Particle.EXPLOSION_HUGE, loc, 2);
-                    cancel();
+                world.spawnParticle(Particle.FLAME, loc, 8, 0.2, 0.2, 0.2, 0);
+                world.spawnParticle(Particle.SMOKE_LARGE, loc, 6, 0.15, 0.15, 0.15, 0);
+                world.spawnParticle(Particle.LAVA, loc, 3, 0.1, 0.1, 0.1, 0);
+
+                for (int i = 1; i <= 3; i++) {
+                    Location trail = loc.clone().subtract(0, i * 0.5, 0);
+                    world.spawnParticle(Particle.SMOKE_NORMAL, trail, 1, 0, 0, 0, 0);
                 }
-
             }
+
         }.runTaskTimer(plugin, 0L, 1L);
     }
 
@@ -188,22 +173,36 @@ public class RandomStageEffectsManager implements Listener {
         Location center = cart.getLocation();
         World world = center.getWorld();
 
-        for (int i = 0; i < amount; i++) {
-            double angle = random.nextDouble() * 2 * Math.PI;
-            double randomRadius = radius * Math.sqrt(random.nextDouble());
+        new BukkitRunnable() {
+            int spawned = 0;
 
-            double x = center.getX() + Math.cos(angle) * randomRadius;
-            double z = center.getZ() + Math.sin(angle) * randomRadius;
-            double y = center.getY() + 50;
+            @Override
+            public void run() {
+                if (spawned >= amount) {
+                    cancel();
+                    return;
+                }
 
-            Location spawnLoc = new Location(world, x, y, z);
+                double angle = random.nextDouble() * 2 * Math.PI;
+                double randomRadius = radius * Math.sqrt(random.nextDouble());
 
-            FallingBlock meteor = world.spawnFallingBlock(spawnLoc, Material.MAGMA_BLOCK.createBlockData());
-            meteor.setDropItem(false);
-            meteor.setHurtEntities(false);
-            meteor.setVelocity(new Vector(0, -0.05, 0));
-            trackMeteor(meteor);
-        }
+                double x = center.getX() + Math.cos(angle) * randomRadius;
+                double z = center.getZ() + Math.sin(angle) * randomRadius;
+                double y = center.getY() + 50;
+
+                Location spawnLoc = new Location(world, x, y, z);
+
+                FallingBlock meteor = world.spawnFallingBlock(spawnLoc, Material.MAGMA_BLOCK.createBlockData());
+                activeMeteors.add(meteor);
+
+                meteor.setDropItem(false);
+                meteor.setHurtEntities(false);
+                meteor.setVelocity(new Vector(0, -0.05, 0));
+                trackMeteor(meteor);
+
+                spawned++;
+            }
+        }.runTaskTimer(plugin, 0L, 12L);
     }
 
     private void dropItems(StorageMinecart cart) {
@@ -232,4 +231,7 @@ public class RandomStageEffectsManager implements Listener {
         }
     }
 
+    public Set<FallingBlock> getActiveMeteors() {
+        return activeMeteors;
+    }
 }
