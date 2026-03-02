@@ -4,18 +4,17 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import subude.gg.Managers.ConfigManager;
-import subude.gg.Managers.EventManager;
 import subude.gg.Managers.SpawnManager;
 
 public class CargoCommands implements CommandExecutor {
-    private final SpawnManager spawnManager;
+    private final CargoController cargoController;
     private final ConfigManager configManager;
-    private final EventManager eventManager;
+    private final SpawnManager spawnManager;
 
-    public CargoCommands(SpawnManager spawnManager, ConfigManager configManager, EventManager eventManager) {
-        this.spawnManager = spawnManager;
+    public CargoCommands(CargoController cargoController, ConfigManager configManager, SpawnManager spawnManager) {
+        this.cargoController = cargoController;
         this.configManager = configManager;
-        this.eventManager = eventManager;
+        this.spawnManager = spawnManager;
     }
 
     @Override
@@ -27,37 +26,30 @@ public class CargoCommands implements CommandExecutor {
 
         switch (args[0].toLowerCase()) {
             case "start" -> {
-                if (spawnManager.getMinecart() != null) {
+                if (cargoController.isRunning()) {
                     sender.sendMessage("§cИвент уже идёт!");
-                } else if (spawnManager.spawnStructure()) {
-                    sender.sendMessage("§cВагонетка заспавнена!");
-                } else {
-                    sender.sendMessage("§cНе удалось найти место для спавна.");
+                    return true;
                 }
+
+                cargoController.forceStart();
+                sender.sendMessage("§aИвент запущен принудительно.");
             }
 
             case "stop" -> {
-                if (spawnManager.getMinecart() == null) {
-                    sender.sendMessage("§cИвента не обнаруженно!");
-                } else {
-                    spawnManager.removeStructure();
-                    sender.sendMessage("§cВагонетка удалена.");
+                if (cargoController.getState() == CargoController.CargoState.WAITING_FOR_EVENT) {
+                    sender.sendMessage("§cИвент не идёт!");
+                    return true;
                 }
+
+                cargoController.forceStop();
+                sender.sendMessage("§cИвент остановлен.");
             }
 
             case "status" -> {
-                if (spawnManager.getMinecart() != null) {
-                    configManager.statusGoMessage.stream().forEach(x -> sender.sendMessage(spawnManager.applyPlaceholders(x)));
+                if (cargoController.isRunning()) {
+                    configManager.statusGoMessage.forEach(message -> sender.sendMessage(spawnManager.applyPlaceholders(message)));
                 } else {
-                    configManager.statusNoneMessage.stream().forEach(x -> sender.sendMessage(spawnManager.applyPlaceholders(x)));
-                }
-            }
-
-            case "nextstage" -> {
-                if (spawnManager.getMinecart() != null) {
-                    eventManager.nextCargoStage();
-                } else {
-                    sender.sendMessage("Ивента не обнаруженно");
+                    configManager.statusNoneMessage.forEach(message -> sender.sendMessage(spawnManager.applyPlaceholders(message)));
                 }
             }
 

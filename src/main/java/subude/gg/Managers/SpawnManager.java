@@ -31,12 +31,11 @@ public class SpawnManager {
         this.key = new NamespacedKey(plugin,"cargo_minecart");
     }
 
-    public boolean spawnStructure() {
+    public boolean spawnStructure(Location loc) {
         if (getMinecart() != null && !getMinecart().isDead()) {
             removeStructure();
         }
 
-        Location loc = findSafeLocation();
         if (loc == null) return false;
 
         this.spawnLocation = loc;
@@ -45,16 +44,10 @@ public class SpawnManager {
         spawnMinecart(loc);
         currentStep = 1;
 
-        playGlobalSound(configManager.spawnSounds, 8F, 1F);
-
-        for (String startMessage : configManager.startMessage) {
-            Bukkit.broadcastMessage(applyPlaceholders(startMessage));
-        }
-
         return true;
     }
 
-    private Location findSafeLocation() {
+    public Location findSafeLocation() {
         if (getWorld() == null) return null;
 
         int radius = configManager.spawnRadius;
@@ -134,6 +127,7 @@ public class SpawnManager {
 
     public void removeStructure() {
         StorageMinecart cart = getMinecart();
+        lootManager.selectCargoType();
 
         if (cart != null && !cart.isDead()) {
             cart.getLocation().getChunk().setForceLoaded(false);
@@ -168,12 +162,6 @@ public class SpawnManager {
         return ChatColor.translateAlternateColorCodes('&', message);
     }
 
-    public void playGlobalSound(List<Sound> sounds, float volume, float pitch) {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            sounds.stream().forEach(sound -> player.playSound(player.getLocation(),sound,volume,pitch));
-        }
-    }
-
     public StorageMinecart getMinecart() {
         if (minecartUUID == null) return null;
 
@@ -183,6 +171,10 @@ public class SpawnManager {
         }
 
         return null;
+    }
+
+    public void setPreparedLocation(Location location) {
+        this.spawnLocation = location;
     }
 
     public int getCurrentStep() {

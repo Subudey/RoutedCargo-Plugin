@@ -1,20 +1,13 @@
 package subude.gg.Managers;
 
 import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import subude.gg.RoutedCargo;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class EventManager {
@@ -31,15 +24,10 @@ public class EventManager {
         this.plugin = plugin;
     }
 
-    public void nextCargoStage() {
-        StorageMinecart cart = spawnManager.getMinecart();
-        if (cart == null) return;
+    public boolean nextCargoStage() {
 
-        int current = spawnManager.getCurrentStep();
-        if (current >= 4) {
-            finishEvent(cart);
-            return;
-        }
+        StorageMinecart cart = spawnManager.getMinecart();
+        if (cart == null) return false;
 
         Location nextLoc = getNextLocation(cart.getLocation(), spawnManager.getRailDirection());
         cart.teleport(nextLoc);
@@ -50,8 +38,14 @@ public class EventManager {
 
         randomStageEffectsManager.triggerStandartEffect();
         spawnManager.incrementSteps();
-        configManager.stageSounds.stream().forEach(sound -> cart.getWorld().playSound(nextLoc, sound, 8F, 1F));
-        configManager.stageParticles.stream().forEach(particle -> cart.getWorld().spawnParticle(particle,nextLoc,200));
+
+        configManager.stageSounds.forEach(sound ->
+                cart.getWorld().playSound(nextLoc, sound, 8F, 1F));
+
+        configManager.stageParticles.forEach(particle ->
+                cart.getWorld().spawnParticle(particle, nextLoc, 200));
+
+        return true;
     }
 
     private Location getNextLocation(Location loc, BlockFace direction) {
@@ -66,11 +60,18 @@ public class EventManager {
         return next;
     }
 
-    private void finishEvent(StorageMinecart cart) {
-        configManager.openSounds.stream().forEach(sound -> cart.getWorld().playSound(cart.getLocation(),sound,8F,1F));
-        configManager.openParticles.stream().forEach(particle -> cart.getWorld().spawnParticle(particle,cart.getLocation(),200));
+    public void finishEvent() {
+
+        StorageMinecart cart = spawnManager.getMinecart();
+        if (cart == null) return;
+
+        configManager.openSounds.forEach(sound ->
+                cart.getWorld().playSound(cart.getLocation(), sound, 8F, 1F));
+
+        configManager.openParticles.forEach(particle ->
+                cart.getWorld().spawnParticle(particle, cart.getLocation(), 200));
+
         explodeLoot(cart);
-        spawnManager.removeStructure();
     }
 
     private void explodeLoot(StorageMinecart cart) {
@@ -81,6 +82,7 @@ public class EventManager {
             if (item == null) continue;
 
             Item dropped = world.dropItem(center, item);
+            dropped.setGlowing(true);
 
             Vector direction = new Vector(Math.random() - 0.5,Math.random() * 0.6 + 0.4,Math.random() - 0.5).normalize();
 

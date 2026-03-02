@@ -17,7 +17,6 @@ public class LootManager {
     }
 
     public void fillMinecart(StorageMinecart cart) {
-        cargoType = getRandomCargoType();
         if (cargoType == null) return;
 
         Inventory inv = cart.getInventory();
@@ -63,4 +62,8 @@ public class LootManager {
     }
 
     public ConfigManager.CargoType getCargoType() {return cargoType;}
+
+    public void selectCargoType() {this.cargoType = getRandomCargoType();}
+
+    public void resetCargoType() {this.cargoType = null;}
 }
