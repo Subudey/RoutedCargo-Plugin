@@ -10,21 +10,19 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import subude.gg.CargoContext;
+
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
 public class RandomStageEffectsManager {
-    private final SpawnManager spawnManager;
+    private CargoContext cxt;
     private final Set<FallingBlock> activeMeteors = new HashSet<>();
-    private final LootManager lootManager;
-    private final JavaPlugin plugin;
     private final Random random = new Random();
 
-    public RandomStageEffectsManager(SpawnManager spawnManager, LootManager lootManager, JavaPlugin plugin) {
-        this.spawnManager = spawnManager;
-        this.lootManager = lootManager;
-        this.plugin = plugin;
+    public RandomStageEffectsManager(CargoContext cxt) {
+        this.cxt = cxt;
     }
 
     public enum StageEffectType {POISON_RADIUS, KNOCKBACK_RADIUS, SPAWN_MOBS, SPAWN_METEOR, DROP_ITEM}
@@ -89,11 +87,11 @@ public class RandomStageEffectsManager {
                 }
             }
 
-        }.runTaskTimer(plugin, 0L, 1L);
+        }.runTaskTimer(cxt.plugin, 0L, 1L);
     }
 
     public void triggerStandartEffect() {
-        StorageMinecart cart = spawnManager.getMinecart();
+        StorageMinecart cart = cxt.spawnManager.getMinecart();
         if (cart == null) return;
 
         for (Player player : cart.getWorld().getPlayers()) {
@@ -105,7 +103,7 @@ public class RandomStageEffectsManager {
     }
 
     public void triggerRandomEffect() {
-        StorageMinecart cart = spawnManager.getMinecart();
+        StorageMinecart cart = cxt.spawnManager.getMinecart();
         if (cart == null) return;
 
         StageEffectType[] values = StageEffectType.values();
@@ -143,7 +141,7 @@ public class RandomStageEffectsManager {
         World world = center.getWorld();
         int amount = 8;
 
-        int chance = lootManager.getCargoType().chance;
+        int chance = cxt.lootManager.getCargoType().chance;
 
         for (int i = 0; i < amount; i++) {
             EntityType type = getRandomMobType();
@@ -202,7 +200,7 @@ public class RandomStageEffectsManager {
 
                 spawned++;
             }
-        }.runTaskTimer(plugin, 0L, 12L);
+        }.runTaskTimer(cxt.plugin, 0L, 12L);
     }
 
     private void dropItems(StorageMinecart cart) {

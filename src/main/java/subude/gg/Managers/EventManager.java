@@ -8,41 +8,37 @@ import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+import subude.gg.CargoContext;
+
 import java.util.Random;
 
 public class EventManager {
-    private final ConfigManager configManager;
-    private final SpawnManager spawnManager;
-    private final RandomStageEffectsManager randomStageEffectsManager;
-    private final JavaPlugin plugin;
+    private CargoContext cxt;
     private final Random random = new Random();
 
-    public EventManager(ConfigManager configManager, SpawnManager spawnManager, RandomStageEffectsManager randomStageEffectsManager, JavaPlugin plugin) {
-        this.configManager = configManager;
-        this.spawnManager = spawnManager;
-        this.randomStageEffectsManager = randomStageEffectsManager;
-        this.plugin = plugin;
+    public EventManager(CargoContext cxt) {
+        this.cxt = cxt;
     }
 
     public boolean nextCargoStage() {
 
-        StorageMinecart cart = spawnManager.getMinecart();
+        StorageMinecart cart = cxt.spawnManager.getMinecart();
         if (cart == null) return false;
 
-        Location nextLoc = getNextLocation(cart.getLocation(), spawnManager.getRailDirection());
+        Location nextLoc = getNextLocation(cart.getLocation(), cxt.spawnManager.getRailDirection());
         cart.teleport(nextLoc);
 
-        if (configManager.randomEffects) {
-            randomStageEffectsManager.triggerRandomEffect();
+        if (cxt.configManager.randomEffects) {
+            cxt.randomStageEffectsManager.triggerRandomEffect();
         }
 
-        randomStageEffectsManager.triggerStandartEffect();
-        spawnManager.incrementSteps();
+        cxt.randomStageEffectsManager.triggerStandartEffect();
+        cxt.spawnManager.incrementSteps();
 
-        configManager.stageSounds.forEach(sound ->
+        cxt.configManager.stageSounds.forEach(sound ->
                 cart.getWorld().playSound(nextLoc, sound, 8F, 1F));
 
-        configManager.stageParticles.forEach(particle ->
+        cxt.configManager.stageParticles.forEach(particle ->
                 cart.getWorld().spawnParticle(particle, nextLoc, 200));
 
         return true;
@@ -62,13 +58,13 @@ public class EventManager {
 
     public void finishEvent() {
 
-        StorageMinecart cart = spawnManager.getMinecart();
+        StorageMinecart cart = cxt.spawnManager.getMinecart();
         if (cart == null) return;
 
-        configManager.openSounds.forEach(sound ->
+        cxt.configManager.openSounds.forEach(sound ->
                 cart.getWorld().playSound(cart.getLocation(), sound, 8F, 1F));
 
-        configManager.openParticles.forEach(particle ->
+        cxt.configManager.openParticles.forEach(particle ->
                 cart.getWorld().spawnParticle(particle, cart.getLocation(), 200));
 
         explodeLoot(cart);

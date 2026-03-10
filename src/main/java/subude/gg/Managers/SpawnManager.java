@@ -9,12 +9,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
+import subude.gg.CargoContext;
+import subude.gg.CargoController;
+
 import java.util.*;
 
 public class SpawnManager {
-    private final ConfigManager configManager;
-    private final LootManager lootManager;
-    private final JavaPlugin plugin;
+    private final CargoContext cxt;
     private final Random random = new Random();
     private final List<Block> placedBlocks = new ArrayList<>();
     private final NamespacedKey key;
@@ -24,11 +25,9 @@ public class SpawnManager {
     private int currentStep;
     private static final BlockFace[] FACES = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 
-    public SpawnManager(ConfigManager configManager, LootManager lootManager, JavaPlugin plugin) {
-        this.configManager = configManager;
-        this.lootManager = lootManager;
-        this.plugin = plugin;
-        this.key = new NamespacedKey(plugin,"cargo_minecart");
+    public SpawnManager(CargoContext cxt) {
+        this.cxt = cxt;
+        this.key = new NamespacedKey(cxt.plugin,"cargo_minecart");
     }
 
     public boolean spawnStructure(Location loc) {
@@ -42,6 +41,7 @@ public class SpawnManager {
 
         buildRails(loc);
         spawnMinecart(loc);
+        playLocalSound(spawnLocation, Sound.AMBIENT_CAVE, 4F, 1F);
         currentStep = 1;
 
         return true;
@@ -50,10 +50,10 @@ public class SpawnManager {
     public Location findSafeLocation() {
         if (getWorld() == null) return null;
 
-        int radius = configManager.spawnRadius;
-        int minY = configManager.minY;
+        int radius = cxt.configManager.spawnRadius;
+        int minY = cxt.configManager.minY;
 
-        for (int attempt = 0; attempt < configManager.attemps; attempt++) {
+        for (int attempt = 0; attempt < cxt.configManager.attemps; attempt++) {
             int x = random.nextInt(radius * 2) - radius;
             int z = random.nextInt(radius * 2) - radius;
 
@@ -112,12 +112,12 @@ public class SpawnManager {
     private void spawnMinecart(Location loc) {
         StorageMinecart cart = (StorageMinecart) getWorld().spawnEntity(loc, EntityType.MINECART_CHEST);
         minecartUUID = cart.getUniqueId();
-        lootManager.fillMinecart(cart);
+        cxt.lootManager.fillMinecart(cart);
 
         loc.getChunk().setForceLoaded(true);
 
-        cart.setMetadata("cargo_cart", new FixedMetadataValue(plugin, true));
-        cart.setCustomName("§6Маршруточный Груз: " + lootManager.getCargoType().name);
+        cart.setMetadata("cargo_cart", new FixedMetadataValue(cxt.plugin, true));
+        cart.setCustomName("§6Маршруточный Груз: " + cxt.lootManager.getCargoType().name);
         cart.setCustomNameVisible(true);
         cart.setGravity(false);
         cart.setInvulnerable(true);
@@ -127,7 +127,7 @@ public class SpawnManager {
 
     public void removeStructure() {
         StorageMinecart cart = getMinecart();
-        lootManager.selectCargoType();
+        cxt.lootManager.selectCargoType();
 
         if (cart != null && !cart.isDead()) {
             cart.getLocation().getChunk().setForceLoaded(false);
@@ -142,7 +142,7 @@ public class SpawnManager {
         }
         placedBlocks.clear();
 
-        for (String endMessage : configManager.endMessage) {
+        for (String endMessage : cxt.configManager.endMessage) {
             Bukkit.broadcastMessage(applyPlaceholders(endMessage));
         }
     }
@@ -155,11 +155,23 @@ public class SpawnManager {
                     .replace("%z%", String.valueOf(spawnLocation.getBlockZ()));
         }
 
-        if (lootManager.getCargoType() != null) {
-            message = message.replace("%type%", lootManager.getCargoType().name);
+        if (cxt.lootManager.getCargoType() != null) {
+            message = message.replace("%type%", cxt.lootManager.getCargoType().name);
+        }
+
+        if (cxt.cargoController != null && cxt.cargoController.getState() == CargoController.CargoState.PREPARING) {
+            message = message.replace("%time%", Integer.toString(cxt.cargoController.getTimeLeft()));
         }
 
         return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    public void playLocalSound(Location loc, Sound sound, float volume, float pitch) {
+        for (Player player : loc.getWorld().getPlayers()) {
+            if (player.getLocation().distanceSquared(loc) <= 50 * 50) {
+                player.playSound(loc, sound, volume, pitch);
+            }
+        }
     }
 
     public StorageMinecart getMinecart() {

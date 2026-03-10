@@ -6,46 +6,45 @@ import org.bukkit.plugin.java.JavaPlugin;
 import subude.gg.Managers.*;
 
 public final class RoutedCargo extends JavaPlugin {
-    private ConfigManager configManager;
-    private SpawnManager spawnManager;
-    private EventManager eventManager;
-    private LootManager lootManager;
-    private CargoListener cargoListener;
-    private RandomStageEffectsManager randomStageEffectsManager;
-    private CargoController cargoController;
+    private CargoContext ctx;
 
     @Override
     public void onEnable() {
-        configManager = new ConfigManager(this);
-        lootManager = new LootManager(configManager);
-        spawnManager = new SpawnManager(configManager, lootManager,this);
-        randomStageEffectsManager = new RandomStageEffectsManager(spawnManager, lootManager, this);
-        eventManager = new EventManager(configManager,spawnManager, randomStageEffectsManager, this);
-        cargoController = new CargoController(this,spawnManager,eventManager,configManager, lootManager);
-        cargoListener = new CargoListener(this, randomStageEffectsManager.getActiveMeteors());
+        ctx = new CargoContext(this);
 
-        getCommand("cargo").setExecutor(new CargoCommands(cargoController,configManager, spawnManager));
-        Bukkit.getPluginManager().registerEvents(cargoListener, this);
+        ctx.configManager = new ConfigManager(this);
+        ctx.lootManager = new LootManager(ctx.configManager);
+        ctx.spawnManager = new SpawnManager(ctx);
+        ctx.bossBarManager = new BossBarManager(ctx);
+        ctx.randomStageEffectsManager = new RandomStageEffectsManager(ctx);
+        ctx.eventManager = new EventManager(ctx);
+        ctx.cargoController = new CargoController(ctx);
+        ctx.cargoListener = new CargoListener(ctx.randomStageEffectsManager.getActiveMeteors());
+
+        getCommand("cargo").setExecutor(new CargoCommands(ctx));
+        Bukkit.getPluginManager().registerEvents(ctx.cargoListener, this);
         getLogger().info("RoutedCargo Load");
-        cargoController.startCycle();
+        ctx.cargoController.startCycle();
     }
 
     @Override
     public void onDisable() {
-        if (cargoController != null) {
-            cargoController.stopImmediately(); // метод который отменяет таймер
+        if (ctx.cargoController != null) {
+            ctx.cargoController.stopImmediately();
         }
 
-        if (spawnManager != null) {
-            spawnManager.removeStructure();
+        if (ctx.spawnManager != null) {
+            ctx.spawnManager.removeStructure();
         }
 
-        for (FallingBlock meteor : randomStageEffectsManager.getActiveMeteors()) {
-            if (meteor != null && meteor.isValid()) {
-                meteor.remove();
+        if (ctx.randomStageEffectsManager != null) {
+            for (FallingBlock meteor : ctx.randomStageEffectsManager.getActiveMeteors()) {
+                if (meteor != null && meteor.isValid()) {
+                    meteor.remove();
+                }
             }
+            ctx.randomStageEffectsManager.getActiveMeteors().clear();
         }
-        randomStageEffectsManager.getActiveMeteors().clear();
 
         Bukkit.getScheduler().cancelTasks(this);
         getLogger().info("RoutedCargo Unload");

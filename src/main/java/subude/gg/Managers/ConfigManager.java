@@ -25,6 +25,7 @@ public class ConfigManager {
     public List<String> startMessage;
     public List<String> endMessage;
     public List<String> statusGoMessage;
+    public List<String> statusPrepareMessage;
     public List<String> statusNoneMessage;
     public final Map<String, CargoType> cargoTypes = new HashMap<>();
     private final JavaPlugin plugin;
@@ -38,7 +39,7 @@ public class ConfigManager {
     private void loadConfig() {
         try {
             eventInterval = plugin.getConfig().getInt("event-interval");
-            eventStartInterval = plugin.getConfig().getInt("event-start-interval");
+            eventStartInterval = plugin.getConfig().getInt("event-preparation-interval");
             eventDuration = plugin.getConfig().getInt("event-duration");
             spawnRadius = plugin.getConfig().getInt("spawn-radius");
             minY = plugin.getConfig().getInt("min-y");
@@ -46,6 +47,7 @@ public class ConfigManager {
             startMessage = plugin.getConfig().getStringList("start-message");
             endMessage = plugin.getConfig().getStringList("end-message");
             statusGoMessage = plugin.getConfig().getStringList("status-go-message");
+            statusPrepareMessage = plugin.getConfig().getStringList("status-prepare-message");
             statusNoneMessage = plugin.getConfig().getStringList("status-none-message");
             attemps = plugin.getConfig().getInt("event-attemps");
             spawnSounds = plugin.getConfig().getStringList("spawn-sounds").stream().map(s -> Sound.valueOf(s)).collect(Collectors.toList());

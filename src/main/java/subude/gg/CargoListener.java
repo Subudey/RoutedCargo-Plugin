@@ -6,18 +6,16 @@ import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import java.util.Set;
 
 public class CargoListener implements Listener {
-    private final JavaPlugin plugin;
     private final Set<FallingBlock> activeMeteors;
 
-    public CargoListener(JavaPlugin plugin, Set<FallingBlock> activeMeteors) {
-        this.plugin = plugin;
+    public CargoListener(Set<FallingBlock> activeMeteors) {
         this.activeMeteors = activeMeteors;
     }
 
@@ -49,5 +47,12 @@ public class CargoListener implements Listener {
 
         cart.setVelocity(new Vector(0, 0, 0));
         cart.teleport(e.getFrom());
+    }
+
+    @EventHandler
+    public void onOpen(InventoryOpenEvent e) {
+        if (!(e.getInventory().getHolder() instanceof StorageMinecart cart)) return;
+        if (!cart.hasMetadata("cargo_cart")) return;
+        e.setCancelled(true);
     }
 }
