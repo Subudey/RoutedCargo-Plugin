@@ -1,4 +1,2 @@
-package subude.gg.Managers;
-
-public class WorldGuardManager {
+package subude.gg.Managers;public class WorldGuardManager {
 }
