@@ -8,7 +8,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.plugin.java.JavaPlugin;
 import subude.gg.CargoContext;
 import subude.gg.CargoController;
 
@@ -42,6 +41,7 @@ public class SpawnManager {
         buildRails(loc);
         spawnMinecart(loc);
         playLocalSound(spawnLocation, Sound.AMBIENT_CAVE, 4F, 1F);
+        cxt.worldGuardManager.createEventRegion(loc, 20);
         currentStep = 1;
 
         return true;
@@ -128,6 +128,7 @@ public class SpawnManager {
     public void removeStructure() {
         StorageMinecart cart = getMinecart();
         cxt.lootManager.selectCargoType();
+        cxt.worldGuardManager.removeEventRegion(cart.getWorld());
 
         if (cart != null && !cart.isDead()) {
             cart.getLocation().getChunk().setForceLoaded(false);

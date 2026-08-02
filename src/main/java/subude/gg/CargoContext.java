@@ -10,6 +10,7 @@ public class CargoContext {
     public SpawnManager spawnManager;
     public BossBarManager bossBarManager;
     public RandomStageEffectsManager randomStageEffectsManager;
+    public WorldGuardManager worldGuardManager;
     public EventManager eventManager;
     public CargoController cargoController;
     public CargoListener cargoListener;

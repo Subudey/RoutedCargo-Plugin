@@ -6,7 +6,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import subude.gg.CargoContext;
 
@@ -48,10 +47,10 @@ public class EventManager {
         Location next = loc.clone();
 
         switch (direction) {
-            case NORTH -> next.add(0,0,-1);
-            case SOUTH -> next.add(0,0,1);
-            case WEST -> next.add(-1,0,0);
-            case EAST -> next.add(1,0,0);
+            case NORTH -> next.add(0, 0, -1);
+            case SOUTH -> next.add(0, 0, 1);
+            case WEST -> next.add(-1, 0, 0);
+            case EAST -> next.add(1, 0, 0);
         }
         return next;
     }
@@ -80,7 +79,7 @@ public class EventManager {
             Item dropped = world.dropItem(center, item);
             dropped.setGlowing(true);
 
-            Vector direction = new Vector(Math.random() - 0.5,Math.random() * 0.6 + 0.4,Math.random() - 0.5).normalize();
+            Vector direction = new Vector(Math.random() - 0.5, Math.random() * 0.6 + 0.4, Math.random() - 0.5).normalize();
 
             direction.multiply(1.3);
             dropped.setVelocity(direction);

@@ -3,7 +3,9 @@ version: '${project.version}'
 main: subude.gg.RoutedCargo
 api-version: '1.18'
 load: STARTUP
-depend: [WorldGuard]
+depend:
+  - WorldGuard
+  - WorldEdit
 authors: [subude, Mazayka]
 description: Обещания надо исполнять
 commands:
